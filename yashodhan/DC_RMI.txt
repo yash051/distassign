@@ -1,0 +1,33 @@
+RMI
+
+Server
+
+# Server.py
+
+pip install rpyc
+
+import rpyc
+
+class ConcatenationService(rpyc.Service):
+    def exposed_concatenate_strings(self, str1, str2):
+        return str1 + str2
+
+if __name__ == "__main__":
+    server = rpyc.ThreadedServer(ConcatenationService, port=12345)
+    server.start()
+
+
+Client
+
+# Client.py
+
+import rpyc
+
+if __name__ == "__main__":
+    conn = rpyc.connect("localhost", 12345)
+    concat_service = conn.root
+    str1 = input("String 1:")
+    str2 = input("String 2:")
+    result = concat_service.concatenate_strings(str1, str2)
+    print("Concatenated String:", result)
+

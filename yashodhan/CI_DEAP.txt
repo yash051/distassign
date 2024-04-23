@@ -1,0 +1,51 @@
+
+
+!pip install deap
+
+import random
+from deap import base, creator, tools, algorithms
+
+# Define the evaluation function
+def eval_func(individual):
+    # Calculate the sum of squares
+    sum_squares = sum((x - 3.0) ** 2 for x in individual)
+    # Calculate fitness as the difference between the sum of squares and 99
+    return abs(sum_squares - 99),
+
+# DEAP setup
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
+toolbox = base.Toolbox()
+
+# Define attributes and individuals
+toolbox.register("attr_float", random.uniform, 2.5, 3.5)  # Adjusted range closer to 3.0
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=3)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+# Evaluation function and genetic operators
+toolbox.register("evaluate", eval_func)
+toolbox.register("mate", tools.cxBlend, alpha=0.5)  # Blend crossover with alpha=0.5
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.2)
+toolbox.register("select", tools.selTournament, tournsize=3)  # Tournament
+
+# Create population
+population = toolbox.population(n=50)  # Population size of 50 individuals
+
+# Genetic Algorithm parameters
+generations = 100  # Increase the number of generations
+cxpb = 0.7  # Increase the probability of crossover
+mutpb = 0.3  # Increase the probability of mutation
+
+# Run the algorithm
+for gen in range(generations):
+    offspring = algorithms.varAnd(population, toolbox, cxpb=cxpb, mutpb=mutpb)
+    fits = toolbox.map(toolbox.evaluate, offspring)  # Evaluate the fitness
+    for fit, ind in zip(fits, offspring):
+        ind.fitness.values = fit
+    population = toolbox.select(offspring, k=len(population))  # Select the next generation
+
+# Get the best individual after generations
+best_ind = tools.selBest(population, k=1)[0]
+best_fitness = sum((x - 3.0) ** 2 for x in best_ind)
+print("Best individual:", best_ind)
+print("Best fitness:", best_fitness)

@@ -1,0 +1,80 @@
+!pip install -U scikit-fuzzy
+
+
+import numpy as np
+import skfuzzy as fuzz
+
+def max_min_composition(R1, R2):
+    result = np.zeros((len(R1), len(R2[0])))
+    for i in range(len(R1)):
+        for j in range(len(R2[0])):
+            max_min = 0
+            for k in range(len(R1[0])):
+                max_min = max(min(R1[i][k], R2[k][j]), max_min)
+            result[i][j] = max_min
+    result = np.clip(result, 0, 1)
+    return result
+
+def take_input():
+    while True:
+        try:
+            A = {k: float(input(f"Enter value for A[{k}]: ")) for k in ['a', 'b', 'c', 'd']}
+            B = {k: float(input(f"Enter value for B[{k}]: ")) for k in ['a', 'b', 'c', 'd']}
+            if all(0 <= val <= 1 for val in A.values()) and all(0 <= val <= 1 for val in B.values()):
+                return A, B
+            else:
+                print("Values should be between 0 and 1. Please try again.")
+        except ValueError:
+            print("Invalid input. Please enter a number between 0 and 1.")
+
+def main():
+    A, B = take_input()
+
+    option = int(input("""
+    Select an option:
+    1) Union
+    2) Intersection
+    3) Complement
+    4) Difference
+    5) Cartesian Product
+    6) Max-Min Composition
+    Enter your choice (1-6): """))
+
+    Y = {}
+    
+    if option == 1:
+        for A_key, B_key in zip(A, B):
+            Y[A_key] = max(A[A_key], B[B_key])
+        print('Fuzzy Set Union is:', Y)
+
+    elif option == 2:
+        for A_key, B_key in zip(A, B):
+            Y[A_key] = min(A[A_key], B[B_key])
+        print('Fuzzy Set Intersection is:', Y)
+
+    elif option == 3:
+        for A_key in A:
+            Y[A_key] = 1 - A[A_key]
+        print('Fuzzy Set Complement is:', Y)
+
+    elif option == 4:
+        for A_key, B_key in zip(A, B):
+            Y[A_key] = max(A[A_key], 1 - B[B_key])
+        print('Fuzzy Set Difference is:', Y)
+
+    elif option == 5:
+        cartesian_product = fuzz.cartprod(np.array(list(A.values())), np.array(list(B.values())))
+        print("Cartesian product:", cartesian_product)
+
+    elif option == 6:
+        R1 = np.array([list(A.values())])
+        R2 = np.array([list(B.values())])
+        result = max_min_composition(R1, R2.T)
+        print("Max-Min Composition Result:")
+        print(result)
+
+    else:
+        print("Invalid option selected.")
+
+if __name__ == "__main__":
+    main()

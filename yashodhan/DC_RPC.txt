@@ -1,0 +1,39 @@
+RPC
+
+Server
+from xmlrpc.server import SimpleXMLRPCServer
+import math
+def calculate_factorial(n):
+    """
+    Calculate the factorial of a given integer.
+    """
+    return math.factorial(n)
+# Create a SimpleXMLRPCServer
+server = SimpleXMLRPCServer(("localhost", 8000))
+# Register the calculate_factorial function
+server.register_function(calculate_factorial, "factorial")
+print("Server listening on port 8000...")
+server.serve_forever()
+
+
+Client
+import xmlrpc.client
+
+# Create a proxy to the XML-RPC server
+server_proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+
+while True:
+    try:
+        num = int(input("Enter a non-negative integer to calculate its factorial (enter a negative number to exit): "))
+        if num < 0:
+            print("Exiting...")
+            break
+    except ValueError:
+        print("Invalid input. Please enter a valid integer.")
+        continue
+
+    # Call the remote function on the server
+    result = server_proxy.factorial(num)
+    # Display the result
+    print(f"The factorial of {num} is: {result}")
+
